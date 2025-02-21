@@ -4,8 +4,18 @@ if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
 $settings = queuemetrics_get_details();
 
 foreach ($settings as $key => $val) {
-	$var[$val['keyword']] = isset($_REQUEST[$val['keyword']]) ? $_REQUEST[$val['keyword']] : $val['value'];
-	$$val['keyword'] = $var[$val['keyword']];
+	// Ensure the key exists and is a valid string
+	$keyword = is_string($val['keyword']) ? $val['keyword'] : 'unknown_key';
+
+	// Ensure value is not an array
+	$value = isset($_REQUEST[$keyword]) ? $_REQUEST[$keyword] : $val['value'];
+
+	if (is_array($value)) {
+		$value = json_encode($value); // Convert array to JSON string
+	}
+
+	$var[$keyword] = $value;
+	${$keyword} = $value; // Dynamically create a variable
 }
 
 $checked = (isset($ivr_logging) && $ivr_logging == 'true')?'CHECKED':'';
